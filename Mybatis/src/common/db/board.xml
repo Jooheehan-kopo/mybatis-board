@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="board.BoardDAO">
+
+	<sql id="selectBoard">
+		select no, title, writer, content, view_cnt, to_char(reg_date, 'yyyy-mm-dd')
+		reg_date
+		from t_board
+	</sql>
+
+	<insert id="newBoard" parameterType="boardVO">
+		insert into t_board(no, title, writer, content)
+		values(seq_t_board_no.nextval, #{title}, #{writer}, #{content})
+		<!-- values(seq_t_board_no.nextval, '${title}', '${writer}', '${content}') 
+			prepapred statement 객체로움직임 -->
+	</insert>
+
+	<resultMap type="boardVO" id="boardMap">
+		<result column="view_cnt" property="viewCnt" />
+		<result column="reg_date" property="regDate" />
+	</resultMap>
+
+	<select id="selectAllMap" resultMap="boardMap">
+		select no, title, writer,
+		content, view_cnt, to_char(reg_date, 'yyyy-mm-dd') reg_date
+		from
+		t_board
+		order by no desc
+	</select>
+
+	<select id="selectAll" resultType="boardVO">
+		select no, title, writer,
+		content, view_cnt as viewCnt
+		, to_char(reg_date, 'yyyy-mm-dd') regDate
+		from t_board
+		order by no desc
+	</select>
+
+	<select id="selectOne" resultMap="boardMap"
+		parameterType="boardVO">
+		select no, title, writer, content, view_cnt,
+		to_char(reg_date, 'yyyy-mm-dd') reg_date
+		from t_board
+		where no = #{no}
+	</select>
+
+	<select id="selectOne2" resultMap="boardMap" parameterType="int">
+		select no, title, writer, content, view_cnt, to_char(reg_date,
+		'yyyy-mm-dd') reg_date
+		from t_board
+		where no = #{no}
+	</select>
+
+	<select id="selectOne3" resultMap="boardMap" parameterType="int">
+		<include refid="selectBoard" />
+		where no = #{no}
+	</select>
+	<select id="selectOne4" resultType="hashmap" parameterType="int">
+		select no, title, writer, content, view_cnt, reg_date
+		from t_board
+		where no = #{no}
+	</select>
+
+	<select id="selectNos" resultMap="boardMap"
+		parameterType="boardVO">
+		<include refid="selectBoard" />
+		where no in
+		<foreach collection="nos" item="bno" open="(" close=")"
+			separator=",">
+			#{bno}
+		</foreach>
+	</select>
+
+
+	<select id="selectNos2" parameterType="list"
+		resultMap="boardMap">
+
+		<include refid="selectBoard" />
+		where no in
+		<foreach separator="," close=")" open="(" item="bno"
+			collection="list">#{bno} </foreach>
+
+	</select>
+
+	<select id="selectWhere" parameterType="String"
+		resultMap="boardMap">
+		<include refid="selectBoard" />
+		where title like '${title}%'
+	</select>
+
+	<select id="selectWhere2" parameterType="boardVO"
+		resultMap="boardMap">
+		<include refid="selectBoard" />
+		<where>
+			<if test="title != null">
+				title like '${title}%'
+			</if>
+			<if test="writer != null">
+				and writer = #{writer}
+			</if>
+		</where>
+	</select>
+
+	<delete id="delete" parameterType="boardVO">
+		delete from t_board where no= #{no}
+	</delete>
+
+	<update id="update" parameterType="boardVO">
+		update t_board set
+		title= #{title}, writer= #{writer}, content='${content}'
+		where no = #{no}
+	</update>
+
+</mapper>
